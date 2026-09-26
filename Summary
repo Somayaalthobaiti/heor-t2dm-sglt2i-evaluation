@@ -1,0 +1,114 @@
+Comparative Economic and Clinical Evaluation of SGLT2 Inhibitors vs. Standard Care in Type 2 Diabetes Mellitus: A Synthetic Claims Analysis and Long-Term Markov Decision Model
+
+
+Retrospective real-world evidence (RWE) derived from administrative claims data often suffers from selection bias and confounding by indication. This repository presents an end-to-end Health Economics and Outcomes Research (HEOR) workflow designed to evaluate the clinical effectiveness and cost-effectiveness of Novel SGLT2 Inhibitors (SGLT2i) compared to Standard Care (Metformin + Sulfonylurea) in patients with Type 2 Diabetes Mellitus (T2DM).
+The analytical framework integrates:
+Confounding Control: 1:1 Nearest-Neighbor Propensity Score Matching (PSM) with caliper boundaries (0.2×SD).
+Econometric Modeling: Generalized Linear Models (Gamma distribution, log link) for heavily right-skewed healthcare expenditure data.
+Decision-Analytic Modeling: A 20-year cohort Markov state-transition model calculating incremental cost-effectiveness ratios (ICERs) in dollars per Quality-Adjusted Life Year (QALY) gained.
+Uncertainty Quantification: One-Way Sensitivity Analysis (OWSA Tornado Diagrams) and Probabilistic Sensitivity Analysis (PSA Cost-Effectiveness Acceptability Curves).
+
+Research Protocol & Study Objectives
+Research Questions
+Clinical Effectiveness: Does treatment with a Novel SGLT2 Inhibitor significantly reduce 1-year cardiovascular (CV) hospitalization risk relative to Standard Care in an observational claims cohort after balancing baseline clinical covariates?
+Economic Evaluation: What is the 20-year Incremental Cost-Effectiveness Ratio (ICER) of Novel SGLT2i therapy relative to Standard Care from a healthcare payer perspective?
+Decision Robustness: Are the economic conclusions robust to variations in key parameters (drug acquisition cost, treatment efficacy, utility weights, and discount rates) under standard Willingness-to-Pay (WTP) thresholds ($50,000 to $100,000 / QALY)?
+Formal Study Protocol Summary
+Study Design: Retrospective observational claims analysis linked to a long-term Markov decision model.
+Target Population: Adult patients (≥18 years) diagnosed with Type 2 Diabetes Mellitus.
+Intervention: Novel SGLT2 Inhibitor therapy (n=454).
+Comparator: Standard Care (Metformin + Sulfonylurea) (n=546).
+Time Horizon: 1 Year (Claims Observational Window); 20 Years (Markov State-Transition Horizon).
+Payer Perspective: Comprehensive direct medical costs (inpatient, outpatient, pharmacy claims).
+Discounting: 3.0% per annum for both costs and health outcomes (QALYs).
+Open-Source Healthcare Claims Data Resources
+While this repository includes a fully reproducible synthetic dataset generator (set.seed(42)), the pipeline is natively structured to import real-world administrative claims datasets. Open-source claims datasets suitable for practicing this workflow include:
+CMS Data Entrepreneur Synthetic Public Use Files (DE-SynPUF): Synthetic Medicare claims containing inpatient, outpatient, prescription drug, and beneficiary summary files.
+Access: CMS DE-SynPUF Portal
+Medical Expenditure Panel Survey (MEPS): Nationally representative survey of healthcare utilization, costs, payment sources, and diagnoses in the United States.
+Access: AHRQ MEPS Open Data | R Package: MEPS
+Kaggle Healthcare Claims Datasets: Open-access synthetic billing, diagnostic (ICD-10), and therapeutic claims files.
+Access: Kaggle Datasets Hub
+Methodological Pipeline
+  ┌───────────────────────┐
+  │  Raw Claims Dataset   │ (N = 1,000 Synthetic Observational Records)
+  └───────────┬───────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │ Data Hygiene & Clean  │ Imputation (Median BMI), Factorization, Audit Matrix
+  └───────────┬───────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │ Propensity Score Match│ 1:1 Nearest-Neighbor (Caliper = 0.2 SD), Love Plot
+  └───────────┬───────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │ Multivariable Models  │ Gamma GLM (Costs) & Logistic Regression (CV Hosp)
+  └───────────┬───────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │  20-Year Markov Model │ 3-State Markov Trace (Stable, CV Event, Dead)
+  └───────────┬───────────┘
+              │
+              ▼
+  ┌───────────────────────┐
+  │ Sensitivity Analyses  │ OWSA (Tornado Diagram) & PSA (CEAC Curve)
+  └───────────────────────┘
+Key Findings & Results Summary
+1. Observational Cohort & Matching Balance
+Unadjusted Cohort: Significant selection imbalance; patients in the SGLT2i arm exhibited higher baseline comorbidity counts.
+Post-PSM Balance: Propensity score matching yielded 100% covariate balance across all clinical features, reducing Standardized Mean Differences (SMD) below the standard 0.10 threshold.
+2. Base-Case Economic Model (20-Year Horizon)
+Standard Care Total Discounted Cost: $23,942.10 | Discounted QALYs: 6.821
+Novel SGLT2i Total Discounted Cost: $28,145.20 | Discounted QALYs: 6.981
+Incremental Cost (ΔC): $4,203.10
+Incremental Effectiveness (ΔE): 0.160 QALYs
+Base-Case ICER: $26,269.38 / QALY gained
+3. Decision Assessment
+At standard Health Technology Assessment (HTA) Willingness-to-Pay (WTP) thresholds of $50,000/QALY and $100,000/QALY, Novel SGLT2i therapy is highly cost-effective.
+Repository Structure
+├── README.md                                    <- Project Overview & Protocol Documentation
+├── LICENSE                                      <- MIT License
+├── data/
+│   ├── raw_claims_dataset.csv                   <- Raw Synthetic Administrative Claims File
+│   └── clean_claims_matched.csv                 <- Imputed & PSM-Matched Cohort File
+├── R/
+│   ├── 01_data_cleaning_and_table1.R            <- Data Hygiene Pipeline & Demographic Table 1
+│   ├── 02_propensity_score_matching.R           <- PSM Balance Diagnostics & Love Plots
+│   ├── 03_econometric_regression_models.R       <- Gamma GLM & Logistic Regression Scripts
+│   ├── 04_markov_decision_model.R              <- 20-Year Markov Trace Simulation Engine
+│   └── 05_sensitivity_analysis_owsa_psa.R      <- Tornado Diagrams & CEAC Curves
+├── outputs/
+│   ├── tables/
+│   │   ├── Table1_Baseline_Demographics.html
+│   │   ├── Table2_Data_Quality_Matrix.html
+│   │   ├── Table3_PSM_Covariate_Balance.html
+│   │   ├── Table4_Gamma_GLM_Cost_Model.html
+│   │   ├── Table5_Logistic_Hospitalization.html
+│   │   ├── Table6_Markov_BaseCase_Results.html
+│   │   └── Table7_OWSA_Parameter_Bounds.html
+│   └── figures/
+│       ├── Figure1_Cost_Density_Distribution.png
+│       ├── Figure2_Love_Plot_SMD_Balance.png
+│       ├── Figure3_Propensity_Score_Overlap.png
+│       ├── Figure4_Markov_Cohort_Trace.png
+│       ├── Figure5_Cost_Effectiveness_Plane.png
+│       ├── Figure6_Tornado_Diagram_OWSA.png
+│       └── Figure7_CEAC_Probabilistic_Curve.png
+Getting Started & Reproducibility
+Dependencies
+Ensure you have R 4.2.0+ and RStudio installed. Install required dependencies via the R console:
+R
+install.packages(c(
+  "tidyverse", 
+  "gtsummary", 
+  "gt", 
+  "MatchIt", 
+  "cobalt", 
+  "scales"
+))
+
